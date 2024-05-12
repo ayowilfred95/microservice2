@@ -1,36 +1,47 @@
-
-# Microservice1
+# Project Name
 
 ## Overview
+This project automates the provisioning and deployment of infrastructure and applications to Azure Kubernetes Service (AKS) using Terraform and GitHub Actions. It provides a streamlined workflow for managing cloud resources and deploying containerized applications on Kubernetes.
 
-This repository contains the infrastructure configuration, deployment files, and GitHub Actions workflows for Microservice1, a component of a larger microservices architecture.
+## Prerequisites
+Before using this project, ensure you have the following:
+- Azure account
+- Azure Kubernetes Service (AKS) setup
+- Azure Container Registry (ACR)
+- GitHub account
 
-### Infrastructure Setup
+## Repository Structure
+- **k8s**: Contains Kubernetes deployment and service configurations.
+- **Dockerfile**: Defines Docker commands for containerizing the application. It automatically triggers when a push is made to the main branch.
 
-The Terraform scripts included in this repository are responsible for setting up the infrastructure components needed to deploy Microservice1 to an AKS (Azure Kubernetes Service) cluster. The setup includes the following components:
+## GitHub Actions Workflows
 
-- **Provider and Terraform Settings**: Configuration for the required providers and versions.
-- **Resource Group**: Creation of a resource group to contain all the resources.
-- **Virtual Network and Subnet**: Definition of a virtual network and subnet specifically for the AKS cluster.
-- **AKS Cluster**: Provisioning of an AKS cluster with a system-assigned identity and Calico network policy for enhanced security and performance.
-- **Azure Container Registry (ACR)**: Optional creation of an ACR for storing private Docker images.
+### Terraform CI/CD
+Automates the provisioning and updating of infrastructure using Terraform.
 
-### Deployment YAMLs
+- **Trigger**: Pushes and pull requests to the `main` branch.
+- **Jobs**:
+  - **Terraform Deployment**: Initializes Terraform, plans, and applies Terraform configurations.
 
-The deployment YAML files define the deployment settings for Microservice1's frontend applications. These files specify the number of replicas, container specifications, and resource limits. The frontend listens on port 3000.
+### Deploy to AKS
+Handles continuous integration and deployment of the application to the AKS cluster.
 
-### Service YAMLs
+- **Trigger**: Pushes and pull requests to the `main` branch.
+- **Jobs**:
+  - **Build and Deploy**: Builds the Docker image, pushes it to ACR, and deploys it to AKS using `kubectl`.
 
-The service YAML files define Kubernetes services to expose the applications. The frontend service exposes port 5000, both using a LoadBalancer to allow external access.
+## Setup and Configuration
 
-**Note:** Ensure to replace `<your_acr_name>` with the actual name of your Azure Container Registry and adjust the image tags as necessary. These files should be placed in a directory (e.g., `k8s/`) and referenced in your CI/CD pipeline for deployment to AKS.
+### Configuring Secrets
+Configure the following GitHub Secrets to use the workflows:
 
-## GitHub Actions Workflow
+- `ARM_CLIENT_ID`: Azure service principal client ID.
+- `ARM_CLIENT_SECRET`: Azure service principal client secret.
+- `ARM_SUBSCRIPTION_ID`: Azure subscription ID.
+- `ARM_TENANT_ID`: Azure tenant ID.
+- `ACR_USERNAME`: Azure Container Registry username.
+- `ACR_PASSWORD`: Azure Container Registry password.
+- `AZURE_CREDENTIALS`: Azure credentials in JSON format for AKS authentication.
 
-The GitHub Actions workflow included in this repository automates the process of building Docker images and deploying Microservice1 to the AKS cluster. Here's a breakdown of the workflow steps:
-
-1. **Build and Push Docker Images**: Uses the `docker/build-push-action@v2` action to build the Docker image from the specified Dockerfile (`./Dockerfile.backend`) and context (current directory `.`). It tags the built image with the provided tag (`${{ secrets.ACR_NAME }}.azurecr.io/yourbackendapp:latest`) and pushes it to the specified Azure Container Registry (ACR).
-  
-2. **Deploy to AKS**: After the Docker image is pushed to ACR, the workflow triggers the deployment job. It checks out the code again, sets up the Azure CLI with the necessary credentials, initializes and applies Terraform for infrastructure setup, installs `kubectl` using the Azure CLI to interact with the Kubernetes cluster, and updates the Kubernetes deployment by applying the YAML files in the `k8s/` directory, which reference the newly pushed Docker image.
-
-This workflow streamlines the process of building, pushing, and deploying Microservice1 to the AKS cluster, ensuring efficient continuous integration and deployment.
+### Workflow Usage
+To use the workflows, simply push changes to your `main` branch or create a pull request. The workflows will handle Terraform operations and the deployment process automatically.
